@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+/frontend/node_modules/
+/backend/node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+backend/.env
+frontend/.env
+
+# Uploaded product images
+uploads/
+
+# Build output
+dist/
+/frontend/dist/
+
+# Agent & IDE caches
+.gemini/
+.agents/
+.system_generated/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
