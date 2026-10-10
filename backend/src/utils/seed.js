@@ -1,10 +1,15 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import dns from 'dns';
 import Category from '../models/Category.js';
 import Product from '../models/Product.js';
 import Admin from '../models/Admin.js';
 
 dotenv.config();
+
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {}
 
 export const categoriesData = [
   {
@@ -254,10 +259,14 @@ export const seedDatabase = async () => {
     ];
 
     for (const p of productsData) {
-      const existingProduct = await Product.findOne({ slug: p.slug });
-      if (!existingProduct) {
-        await Product.create(p);
-        console.log(`[Database Seed] Created Product: ${p.name.substring(0, 35)}...`);
+      try {
+        const existingProduct = await Product.findOne({ name: p.name });
+        if (!existingProduct) {
+          await Product.create(p);
+          console.log(`[Database Seed] Created Product: ${p.name.substring(0, 35)}...`);
+        }
+      } catch (productErr) {
+        console.warn(`[Database Seed Warning] Product ${p.name.substring(0, 25)}: ${productErr.message}`);
       }
     }
 

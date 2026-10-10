@@ -82,12 +82,10 @@ const productSchema = new mongoose.Schema(
       trim: true,
       uppercase: true,
       index: true,
-      default: null,
     },
     externalProductId: {
       type: String,
       trim: true,
-      default: null,
     },
     sourceUrl: {
       type: String,
@@ -168,8 +166,7 @@ productSchema.pre('validate', function () {
   }
 });
 
-// Compound unique index for platform + asin
-productSchema.index({ platform: 1, asin: 1 }, { unique: true, sparse: true });
+
 
 // Full-text search index
 productSchema.index({
