@@ -91,7 +91,19 @@ app.get('/api/health/database', (req, res) => {
   res.status(isConnected ? 200 : 503).json(response);
 });
 
-// 404 Route Handler
+// Serve static frontend assets in production if built
+const frontendDist = path.join(__dirname, '../../frontend/dist');
+if (fs.existsSync(frontendDist)) {
+  app.use(express.static(frontendDist));
+  app.get('*', (req, res, next) => {
+    if (req.originalUrl.startsWith('/api') || req.originalUrl.startsWith('/uploads')) {
+      return next();
+    }
+    res.sendFile(path.join(frontendDist, 'index.html'));
+  });
+}
+
+// 404 Route Handler for unmatched API endpoints
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -111,11 +123,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start Server
-const server = app.listen(PORT, () => {
-  console.log(`[Affilify API] Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
-  console.log(`[Affilify API] Endpoint: http://localhost:${PORT}/api/health`);
-});
+// Start Server (Only when not executed inside Vercel serverless environment)
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`[Affilify API] Server running on port ${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
+    console.log(`[Affilify API] Endpoint: http://localhost:${PORT}/api/health`);
+  });
+}
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
@@ -123,3 +137,4 @@ process.on('unhandledRejection', (err) => {
 });
 
 export default app;
+
