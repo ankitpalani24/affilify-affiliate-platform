@@ -57,11 +57,11 @@ if (process.env.NODE_ENV !== 'production') {
 // Serve uploaded images statically
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Mount API Routes
-app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/upload', uploadRoutes);
+// Mount API Routes (Supports both standard express and Vercel serverless paths)
+app.use(['/api/products', '/products'], productRoutes);
+app.use(['/api/categories', '/categories'], categoryRoutes);
+app.use(['/api/admin', '/admin-api'], adminRoutes);
+app.use(['/api/upload', '/upload'], uploadRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
