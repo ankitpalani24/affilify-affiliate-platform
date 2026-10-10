@@ -12,27 +12,41 @@ try {
 const PROJECT_NAME = 'Amazon Affiliate';
 const ISOLATED_PROHIBITED_DBS = ['salonsync', 'salonsync_db', 'secure_evoting_db', 'voting_system'];
 
+let cachedConn = null;
+let cachedPromise = null;
+
 const connectDB = async () => {
-  try {
-    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/amazon_affiliate_db';
-    mongoose.set('strictQuery', false);
-    const conn = await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: 8000,
-    });
+  if (cachedConn && mongoose.connection.readyState === 1) {
+    return cachedConn;
+  }
+
+  if (cachedPromise) {
+    return cachedPromise;
+  }
+
+  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/amazon_affiliate_db';
+  mongoose.set('strictQuery', false);
+
+  cachedPromise = mongoose.connect(mongoUri, {
+    serverSelectionTimeoutMS: 10000,
+  }).then((conn) => {
+    cachedConn = conn;
     const dbName = conn.connection.name;
     if (ISOLATED_PROHIBITED_DBS.includes(dbName.toLowerCase())) {
       console.error(`[${PROJECT_NAME}] FATAL: Connected to prohibited database "${dbName}" belonging to another project!`);
-      console.error(`[${PROJECT_NAME}] Aborting connection immediately to protect project data.`);
-      await mongoose.disconnect();
+      mongoose.disconnect();
       throw new Error(`Connection rejected: Database "${dbName}" is strictly isolated.`);
     }
-    console.log(`[${PROJECT_NAME}]`);
-    console.log(`Connected database: ${dbName}`);
+    console.log(`[${PROJECT_NAME}] Connected database: ${dbName}`);
     return conn;
-  } catch (error) {
+  }).catch((error) => {
+    cachedPromise = null;
     console.error(`[${PROJECT_NAME}] Database connection failed: ${error.message}`);
     return null;
-  }
+  });
+
+  return cachedPromise;
 };
 
 export default connectDB;
+
