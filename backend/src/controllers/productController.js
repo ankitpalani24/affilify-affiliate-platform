@@ -114,6 +114,14 @@ export const getProducts = async (req, res) => {
       });
     }
 
+    if (process.env.NODE_ENV === 'production' || process.env.VERCEL === '1') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection required in production mode.',
+        data: [],
+      });
+    }
+
     // Fallback Store
     let list = [...memoryStore.products];
 

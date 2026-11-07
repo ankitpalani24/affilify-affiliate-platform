@@ -1,20 +1,33 @@
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const uploadDir = path.join(__dirname, '../../uploads');
 
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (err) {
+  // On read-only serverless environments (like Vercel), creating folders outside /tmp fails.
+  // Silently handled here so import does not crash the serverless container.
 }
 
 const storage = multer.diskStorage({
+
   destination: function (req, file, cb) {
-    cb(null, uploadDir);
+    try {
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true }); 
+      }
+      cb(null, uploadDir);
+    } catch (err) {
+      cb(new Error(`Upload destination error: ${err.message}`));
+    }
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
@@ -22,6 +35,7 @@ const storage = multer.diskStorage({
     cb(null, `img-${uniqueSuffix}${ext}`);
   },
 });
+
 
 const fileFilter = (req, file, cb) => {
   const allowedMimeTypes = [
