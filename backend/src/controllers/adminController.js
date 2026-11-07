@@ -27,7 +27,7 @@ export const loginAdmin = async (req, res) => {
     }
 
     if (mongoose.connection.readyState === 1) {
-      const admin = await Admin.findOne({ email: email.toLowerCase() }).select('+password');
+      const admin = await Admin.findOne({ email: email.toLowerCase() }).select('+password +passwordHash');
       if (admin) {
         const isMatch = await admin.matchPassword(password);
         if (isMatch) {
