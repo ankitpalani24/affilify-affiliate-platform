@@ -137,17 +137,31 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-// Virtual alias: category -> categoryId for backward compatibility
-productSchema.virtual('category')
+// Virtual populate: category -> Category model via categoryId
+productSchema.virtual('category', {
+  ref: 'Category',
+  localField: 'categoryId',
+  foreignField: '_id',
+  justOne: true,
+});
+
+// Virtual alias: affiliatePlatform -> platform
+productSchema.virtual('affiliatePlatform')
   .get(function () {
-    return this.categoryId;
+    return this.platform || 'Amazon';
   })
-  .set(function (cat) {
-    this.categoryId = cat;
+  .set(function (val) {
+    this.platform = val;
   });
 
 // Pre-validate hook: auto slug generation & discount calculation
 productSchema.pre('validate', function () {
+  if (!this.categoryId && this.category) {
+    this.categoryId = this.category;
+  }
+  if (!this.platform && this.affiliatePlatform) {
+    this.platform = this.affiliatePlatform;
+  }
   if (this.isModified('name') || !this.slug) {
     if (this.name) {
       this.slug = slugify(this.name, { lower: true, strict: true });

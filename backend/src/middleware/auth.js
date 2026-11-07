@@ -34,15 +34,17 @@ export const protectAdmin = async (req, res, next) => {
       }
     }
 
-    // Fallback store check
-    if (decoded.id === memoryStore.admin._id || decoded.id) {
-      req.admin = {
-        _id: memoryStore.admin._id,
-        name: memoryStore.admin.name,
-        email: memoryStore.admin.email,
-        role: memoryStore.admin.role,
-      };
-      return next();
+    // Fallback store check (development only)
+    if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
+      if (decoded.id === memoryStore.admin._id || decoded.id) {
+        req.admin = {
+          _id: memoryStore.admin._id,
+          name: memoryStore.admin.name,
+          email: memoryStore.admin.email,
+          role: memoryStore.admin.role,
+        };
+        return next();
+      }
     }
 
     return res.status(401).json({

@@ -50,25 +50,27 @@ export const loginAdmin = async (req, res) => {
       }
     }
 
-    // Fallback in-memory admin check
-    const normalizedEmail = email.toLowerCase().trim();
-    if (
-      normalizedEmail === memoryStore.admin.email.toLowerCase() &&
-      bcrypt.compareSync(password, memoryStore.admin.passwordHash)
-    ) {
-      const token = generateToken(memoryStore.admin._id);
-      return res.status(200).json({
-        success: true,
-        message: 'Logged in successfully (Dev Mode)',
-        token,
-        admin: {
-          id: memoryStore.admin._id,
-          name: memoryStore.admin.name,
-          email: memoryStore.admin.email,
-          role: memoryStore.admin.role,
-          lastLogin: new Date(),
-        },
-      });
+    // Fallback in-memory admin check (development only)
+    if (process.env.NODE_ENV !== 'production' && process.env.VERCEL !== '1') {
+      const normalizedEmail = email.toLowerCase().trim();
+      if (
+        normalizedEmail === memoryStore.admin.email.toLowerCase() &&
+        bcrypt.compareSync(password, memoryStore.admin.passwordHash)
+      ) {
+        const token = generateToken(memoryStore.admin._id);
+        return res.status(200).json({
+          success: true,
+          message: 'Logged in successfully (Dev Mode)',
+          token,
+          admin: {
+            id: memoryStore.admin._id,
+            name: memoryStore.admin.name,
+            email: memoryStore.admin.email,
+            role: memoryStore.admin.role,
+            lastLogin: new Date(),
+          },
+        });
+      }
     }
 
     return res.status(401).json({ success: false, message: 'Invalid email or password' });

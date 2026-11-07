@@ -17,17 +17,25 @@ export const getCategories = async (req, res) => {
 
       const categoryCounts = await Product.aggregate([
         { $match: { isActive: true } },
-        { $group: { _id: '$category', count: { $sum: 1 } } },
+        {
+          $project: {
+            catId: { $ifNull: ['$categoryId', '$category'] },
+          },
+        },
+        { $match: { catId: { $ne: null } } },
+        { $group: { _id: '$catId', count: { $sum: 1 } } },
       ]);
 
       const countsMap = categoryCounts.reduce((acc, curr) => {
-        acc[curr._id.toString()] = curr.count;
+        if (curr && curr._id) {
+          acc[curr._id.toString()] = curr.count;
+        }
         return acc;
       }, {});
 
       const enriched = categories.map((cat) => ({
         ...cat,
-        productsCount: countsMap[cat._id.toString()] || 0,
+        productsCount: (cat._id && countsMap[cat._id.toString()]) || 0,
       }));
 
       return res.status(200).json({ success: true, count: enriched.length, data: enriched });

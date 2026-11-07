@@ -41,21 +41,25 @@ export const getProducts = async (req, res) => {
 
       if (search && search.trim() !== '') {
         const searchRegex = new RegExp(search.trim(), 'i');
-        query.$or = [
-          { name: searchRegex },
-          { brand: searchRegex },
-          { tags: { $in: [searchRegex] } },
-          { shortDescription: searchRegex },
-        ];
+        query.$and = query.$and || [];
+        query.$and.push({
+          $or: [
+            { name: searchRegex },
+            { brand: searchRegex },
+            { tags: { $in: [searchRegex] } },
+            { shortDescription: searchRegex },
+          ],
+        });
       }
 
       if (category && category !== 'all') {
+        let catId = null;
         if (mongoose.Types.ObjectId.isValid(category)) {
-          query.category = category;
+          catId = category;
         } else {
           const catDoc = await Category.findOne({ slug: category.toLowerCase() });
           if (catDoc) {
-            query.category = catDoc._id;
+            catId = catDoc._id;
           } else {
             return res.status(200).json({
               success: true,
@@ -66,6 +70,10 @@ export const getProducts = async (req, res) => {
             });
           }
         }
+        query.$and = query.$and || [];
+        query.$and.push({
+          $or: [{ categoryId: catId }, { category: catId }],
+        });
       }
 
       if (brand && brand !== 'all') {
@@ -75,7 +83,14 @@ export const getProducts = async (req, res) => {
 
       if (platform && platform !== 'all') {
         const platformsList = platform.split(',').map((p) => p.trim());
-        query.affiliatePlatform = { $in: platformsList };
+        const regexes = platformsList.map((p) => new RegExp(`^${p}$`, 'i'));
+        query.$and = query.$and || [];
+        query.$and.push({
+          $or: [
+            { platform: { $in: regexes } },
+            { affiliatePlatform: { $in: regexes } },
+          ],
+        });
       }
 
       if (minPrice !== undefined || maxPrice !== undefined) {
@@ -104,13 +119,18 @@ export const getProducts = async (req, res) => {
           .lean(),
       ]);
 
+      const enrichedProducts = products.map((p) => ({
+        ...p,
+        affiliatePlatform: p.affiliatePlatform || p.platform || 'Amazon',
+      }));
+
       return res.status(200).json({
         success: true,
         total,
         page: pageNum,
         totalPages: Math.ceil(total / limitNum),
         limit: limitNum,
-        data: products,
+        data: enrichedProducts,
       });
     }
 
@@ -203,8 +223,9 @@ export const getProductBySlug = async (req, res) => {
         return res.status(404).json({ success: false, message: 'Product not found' });
       }
 
+      const catId = product.category?._id || product.categoryId || product.category;
       const relatedProducts = await Product.find({
-        category: product.category?._id || product.category,
+        $or: [{ categoryId: catId }, { category: catId }],
         _id: { $ne: product._id },
         isActive: true,
       })
@@ -212,7 +233,16 @@ export const getProductBySlug = async (req, res) => {
         .limit(4)
         .lean();
 
-      return res.status(200).json({ success: true, data: product, related: relatedProducts });
+      const enrichedProduct = {
+        ...product,
+        affiliatePlatform: product.affiliatePlatform || product.platform || 'Amazon',
+      };
+      const enrichedRelated = relatedProducts.map((p) => ({
+        ...p,
+        affiliatePlatform: p.affiliatePlatform || p.platform || 'Amazon',
+      }));
+
+      return res.status(200).json({ success: true, data: enrichedProduct, related: enrichedRelated });
     }
 
     // Memory store lookup
@@ -239,9 +269,15 @@ export const getProductById = async (req, res) => {
     const { id } = req.params;
 
     if (mongoose.connection.readyState === 1) {
-      const product = await Product.findById(id).populate('category', 'name slug image');
+      const product = await Product.findById(id).populate('category', 'name slug image').lean();
       if (!product) return res.status(404).json({ success: false, message: 'Product not found' });
-      return res.status(200).json({ success: true, data: product });
+      return res.status(200).json({
+        success: true,
+        data: {
+          ...product,
+          affiliatePlatform: product.affiliatePlatform || product.platform || 'Amazon',
+        },
+      });
     }
 
     const product = memoryStore.products.find((p) => p._id === id);
@@ -553,20 +589,24 @@ export const toggleTrending = async (req, res) => {
 export const getProductFiltersMeta = async (req, res) => {
   try {
     if (mongoose.connection.readyState === 1) {
-      const [brands, platforms, priceStats] = await Promise.all([
+      const [brands, platformsDb, priceStats] = await Promise.all([
         Product.distinct('brand', { isActive: true }),
-        Product.distinct('affiliatePlatform', { isActive: true }),
+        Product.distinct('platform', { isActive: true }),
         Product.aggregate([
           { $match: { isActive: true } },
           { $group: { _id: null, minPrice: { $min: '$price' }, maxPrice: { $max: '$price' } } },
         ]),
       ]);
 
+      const formattedPlatforms = (platformsDb && platformsDb.length ? platformsDb : ['Amazon']).map(
+        (p) => (p ? p.charAt(0).toUpperCase() + p.slice(1) : 'Amazon')
+      );
+
       return res.status(200).json({
         success: true,
         data: {
           brands: brands.filter(Boolean).sort(),
-          platforms: platforms.filter(Boolean),
+          platforms: [...new Set(formattedPlatforms)],
           minPrice: priceStats[0]?.minPrice || 0,
           maxPrice: priceStats[0]?.maxPrice || 100000,
         },
