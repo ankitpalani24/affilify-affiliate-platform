@@ -41,7 +41,7 @@ const Footer = () => {
               </span>
             </Link>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed max-w-sm">
-              Your premier product discovery catalog. We curate high-rated, handpicked deals and products across Amazon, Flipkart, Myntra, and top stores to help you shop smart and save more.
+              Your premier Amazon product discovery catalog. We curate high-rated, handpicked deals and verified products across Amazon India to help you shop smart and save more.
             </p>
 
             {/* Newsletter Subscription */}
@@ -99,13 +99,13 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/products?platform=Flipkart" className="hover:text-brand-600 transition-colors inline-block py-0.5">
-                  Flipkart Offers
+                <Link to="/products?sort=discount_desc" className="hover:text-brand-600 transition-colors inline-block py-0.5">
+                  Top Discounts
                 </Link>
               </li>
               <li>
-                <Link to="/products?platform=Myntra" className="hover:text-brand-600 transition-colors inline-block py-0.5">
-                  Myntra Fashion
+                <Link to="/products?sort=price_asc" className="hover:text-brand-600 transition-colors inline-block py-0.5">
+                  Budget Finds
                 </Link>
               </li>
             </ul>
@@ -177,7 +177,7 @@ const Footer = () => {
             <Info className="w-4 h-4 text-brand-600 shrink-0" />
             <span>FTC Affiliate Disclosure & Disclaimer:</span>
           </div>
-          Affilify participates in various affiliate marketing programs, including the Amazon Associates Program, Flipkart Affiliate Program, and others. When you click on product links and make a purchase on partner platforms, we may earn an affiliate commission at no extra cost to you. Product prices, discounts, and availability are subject to change by respective retailers.
+          Affilify is a participant in the Amazon Services LLC Associates Program and the Amazon.in Associates Program, an affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.in. As an Amazon Associate, we earn from qualifying purchases. Product prices, discounts, and availability are subject to change on Amazon.in.
         </div>
 
         {/* Bottom Bar */}

@@ -111,7 +111,7 @@ const Navbar = () => {
           <div className="flex items-center gap-2 truncate">
             <span className="w-2 h-2 rounded-full bg-brand-400 animate-pulse shrink-0"></span>
             <span className="truncate">
-              Handpicked verified discounts from <strong>Amazon</strong>, <strong>Flipkart</strong> & <strong>Myntra</strong>
+              Handpicked verified discounts from <strong>Amazon India</strong>
             </span>
           </div>
 
@@ -291,7 +291,7 @@ const Navbar = () => {
                 <input
                   ref={mobileSearchInputRef}
                   type="text"
-                  placeholder="Search Amazon, Flipkart deals..."
+                  placeholder="Search Amazon deals & products..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-surface-100 text-slate-800 placeholder-slate-400 text-xs rounded-xl pl-9 pr-3 py-2.5 border border-surface-300 focus:border-brand-500 focus:bg-white outline-none min-h-[44px]"
@@ -425,20 +425,20 @@ const Navbar = () => {
                   <span className="text-[10px] font-bold bg-[#FF9900]/15 text-[#b36b00] px-2 py-0.5 rounded">Store</span>
                 </Link>
                 <Link
-                  to="/products?platform=Flipkart"
+                  to="/products?featured=true"
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center justify-between px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-surface-100 rounded-xl min-h-[44px]"
                 >
-                  <span>Flipkart Offers</span>
-                  <span className="text-[10px] font-bold bg-[#2874F0]/15 text-[#1e5ec6] px-2 py-0.5 rounded">Store</span>
+                  <span>Featured Deals</span>
+                  <span className="text-[10px] font-bold bg-amber-100 text-amber-800 px-2 py-0.5 rounded">Featured</span>
                 </Link>
                 <Link
-                  to="/products?platform=Myntra"
+                  to="/products?trending=true"
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center justify-between px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-surface-100 rounded-xl min-h-[44px]"
                 >
-                  <span>Myntra Fashion</span>
-                  <span className="text-[10px] font-bold bg-[#FF3F6C]/15 text-[#c41b43] px-2 py-0.5 rounded">Store</span>
+                  <span>Trending Deals</span>
+                  <span className="text-[10px] font-bold bg-rose-100 text-rose-800 px-2 py-0.5 rounded">Hot</span>
                 </Link>
               </div>
 

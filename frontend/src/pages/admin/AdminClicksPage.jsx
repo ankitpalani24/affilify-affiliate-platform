@@ -98,10 +98,6 @@ const AdminClicksPage = () => {
           >
             <option value="all">All Stores</option>
             <option value="Amazon">Amazon</option>
-            <option value="Flipkart">Flipkart</option>
-            <option value="Myntra">Myntra</option>
-            <option value="Ajio">Ajio</option>
-            <option value="Nykaa">Nykaa</option>
           </select>
 
           <button

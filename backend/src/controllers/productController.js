@@ -1,4 +1,4 @@
-import Product from '../models/Product.js';
+import Product, { AMAZON_URL_REGEX, ASIN_REGEX } from '../models/Product.js';
 import Category from '../models/Category.js';
 import AffiliateClick from '../models/AffiliateClick.js';
 import { memoryStore } from '../utils/store.js';
@@ -377,6 +377,33 @@ export const createProduct = async (req, res) => {
       tags,
     } = req.body;
 
+    const targetPlatform = (affiliatePlatform || req.body.platform || 'Amazon').toLowerCase();
+    if (targetPlatform === 'amazon') {
+      if (!affiliateUrl || !AMAZON_URL_REGEX.test(affiliateUrl)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation Error: This is an Amazon-only platform. Product requires a valid Amazon affiliate URL (e.g. https://www.amazon.in/dp/ASIN?tag=...). Marketplace URLs from Myntra, Flipkart, or third-party stores are strictly prohibited.',
+        });
+      }
+      let extractedAsin = null;
+      const asinMatch = affiliateUrl.match(/(?:\/dp\/|\/gp\/product\/|\/product\/)([A-Z0-9]{10})(?:[/?#]|$)/i);
+      if (asinMatch) extractedAsin = asinMatch[1].toUpperCase();
+
+      const providedAsin = (req.body.asin || extractedAsin || '').toUpperCase();
+      if (providedAsin && !ASIN_REGEX.test(providedAsin)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation Error: Amazon ASIN must be a valid 10-character alphanumeric string.',
+        });
+      }
+      if (providedAsin && extractedAsin && providedAsin !== extractedAsin) {
+        return res.status(400).json({
+          success: false,
+          message: `Validation Error: ASIN mismatch. Stored ASIN (${providedAsin}) does not match ASIN extracted from affiliate URL (${extractedAsin}).`,
+        });
+      }
+    }
+
     let generatedSlug = slug ? slugify(slug, { lower: true, strict: true }) : slugify(name, { lower: true, strict: true });
     
     let discount = 0;
@@ -456,8 +483,37 @@ export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
 
+    if (req.body.affiliateUrl || req.body.affiliatePlatform || req.body.platform) {
+      const targetPlatform = (req.body.affiliatePlatform || req.body.platform || 'Amazon').toLowerCase();
+      if (targetPlatform === 'amazon' && req.body.affiliateUrl) {
+        if (!AMAZON_URL_REGEX.test(req.body.affiliateUrl)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Validation Error: This is an Amazon-only platform. Product requires a valid Amazon affiliate URL. Marketplace URLs from Myntra, Flipkart, or third-party stores are strictly prohibited.',
+          });
+        }
+        let extractedAsin = null;
+        const asinMatch = req.body.affiliateUrl.match(/(?:\/dp\/|\/gp\/product\/|\/product\/)([A-Z0-9]{10})(?:[/?#]|$)/i);
+        if (asinMatch) extractedAsin = asinMatch[1].toUpperCase();
+
+        const providedAsin = (req.body.asin || extractedAsin || '').toUpperCase();
+        if (providedAsin && !ASIN_REGEX.test(providedAsin)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Validation Error: Amazon ASIN must be a valid 10-character alphanumeric string.',
+          });
+        }
+        if (providedAsin && extractedAsin && providedAsin !== extractedAsin) {
+          return res.status(400).json({
+            success: false,
+            message: `Validation Error: ASIN mismatch. Stored ASIN (${providedAsin}) does not match ASIN extracted from affiliate URL (${extractedAsin}).`,
+          });
+        }
+      }
+    }
+
     if (mongoose.connection.readyState === 1) {
-      const updated = await Product.findByIdAndUpdate(id, req.body, { new: true }).populate('category', 'name slug image');
+      const updated = await Product.findByIdAndUpdate(id, req.body, { new: true, runValidators: true }).populate('category', 'name slug image');
       return res.status(200).json({ success: true, message: 'Product updated', data: updated });
     }
 

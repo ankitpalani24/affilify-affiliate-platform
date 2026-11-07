@@ -37,7 +37,7 @@ const BannerHero = ({ featuredProduct }) => {
 
             {/* Description */}
             <p className="text-brand-100 text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0 font-normal">
-              We curate verified discounts and trending products from <span className="text-amber-300 font-bold">Amazon</span>, <span className="text-sky-200 font-bold">Flipkart</span>, and <span className="text-pink-200 font-bold">Myntra</span>. Browse, compare, and click directly to official retailers to grab the best offers.
+              We curate verified discounts and trending products directly from <span className="text-amber-300 font-bold">Amazon India</span>. Browse, compare, and click directly to Amazon.in to grab the best deals with verified affiliate savings.
             </p>
 
             {/* CTAs */}

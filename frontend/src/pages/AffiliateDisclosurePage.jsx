@@ -37,25 +37,23 @@ const AffiliateDisclosurePage = () => {
 
           <h2 className="text-base sm:text-lg font-bold text-slate-900 pt-2">2. What Happens When You Click "Buy Now"</h2>
           <p>
-            When you click any <strong>"Buy Now"</strong>, <strong>"Check Deal"</strong>, or affiliate button on our website, you are redirected to the official retailer (such as Amazon, Flipkart, Myntra, or respective brand stores). You complete the transaction securely directly on their platform.
+            When you click any <strong>"Buy Now"</strong>, <strong>"Check Deal"</strong>, or affiliate button on our website, you are redirected to the official Amazon.in retailer product page. You complete the transaction securely directly on Amazon.
           </p>
 
           <h2 className="text-base sm:text-lg font-bold text-slate-900 pt-2">3. Affiliate Links and Commissions</h2>
           <p>
-            Some of the links on this website are "affiliate links". This means that if you click on the link and make a purchase, we may receive an affiliate commission from the retailer.
+            The product links on this website are Amazon affiliate links. This means that if you click on the link and make a purchase, we may receive an affiliate commission from Amazon at no extra cost to you.
           </p>
           <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-emerald-900 text-xs font-medium flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div>
-              <strong>Zero Extra Cost to You:</strong> The commission we receive is paid directly by the retailer as part of their marketing budget. The price you pay remains exactly the same (or even cheaper if a special promo/coupon code is applied) as shopping directly on the retailer's site.
+              <strong>Zero Extra Cost to You:</strong> The commission we receive is paid directly by Amazon as an affiliate partner. The price you pay remains exactly the same as shopping directly on Amazon.in.
             </div>
           </div>
 
           <h2 className="text-base sm:text-lg font-bold text-slate-900 pt-2">4. Affiliate Programs Participated In</h2>
           <ul className="list-disc list-inside space-y-1 text-xs sm:text-sm pl-2">
-            <li><strong>Amazon Services LLC Associates Program:</strong> An affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.in and international Amazon sites.</li>
-            <li><strong>Flipkart Affiliate Program:</strong> Direct partner program for electronics, home essentials, and fashion.</li>
-            <li><strong>Myntra & Ajio Affiliate Programs:</strong> Curated apparel, luxury lifestyle, and footwear.</li>
+            <li><strong>Amazon Services LLC Associates Program & Amazon.in Associates Program:</strong> An affiliate advertising program designed to provide a means for sites to earn advertising fees by advertising and linking to Amazon.in. As an Amazon Associate, we earn from qualifying purchases.</li>
           </ul>
 
           <h2 className="text-base sm:text-lg font-bold text-slate-900 pt-2">5. Editorial Independence</h2>

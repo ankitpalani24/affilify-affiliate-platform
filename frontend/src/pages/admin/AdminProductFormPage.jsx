@@ -37,6 +37,7 @@ const AdminProductFormPage = () => {
     originalPrice: '',
     discountPercentage: 0,
     affiliatePlatform: 'Amazon',
+    asin: '',
     affiliateUrl: '',
     buyButtonText: 'Buy on Amazon',
     shortDescription: '',
@@ -76,9 +77,10 @@ const AdminProductFormPage = () => {
               price: p.price || '',
               originalPrice: p.originalPrice || '',
               discountPercentage: p.discountPercentage || 0,
-              affiliatePlatform: p.affiliatePlatform || 'Amazon',
+              affiliatePlatform: 'Amazon',
+              asin: p.asin || '',
               affiliateUrl: p.affiliateUrl || '',
-              buyButtonText: p.buyButtonText || `Buy on ${p.affiliatePlatform || 'Amazon'}`,
+              buyButtonText: p.buyButtonText || 'Buy on Amazon',
               shortDescription: p.shortDescription || '',
               description: p.description || '',
               features: p.features && p.features.length > 0 ? p.features : [''],
@@ -116,11 +118,18 @@ const AdminProductFormPage = () => {
     }));
   };
 
-  const handlePlatformChange = (platform) => {
+  const extractAsin = (url) => {
+    if (!url) return '';
+    const match = url.match(/(?:dp|gp\/product|\/product-reviews|\/d)\/([A-Z0-9]{10})/i);
+    return match ? match[1].toUpperCase() : '';
+  };
+
+  const handleAffiliateUrlChange = (url) => {
+    const extracted = extractAsin(url);
     setFormData((prev) => ({
       ...prev,
-      affiliatePlatform: platform,
-      buyButtonText: `Buy on ${platform}`,
+      affiliateUrl: url,
+      asin: prev.asin ? prev.asin : extracted,
     }));
   };
 
@@ -204,10 +213,43 @@ const AdminProductFormPage = () => {
       return;
     }
 
+    // Amazon-Only URL & ASIN Validation
+    const url = formData.affiliateUrl.trim();
+    const isNonAmazon = /flipkart\.com|myntra\.com|ajio\.com|nykaa\.com|tatacliq\.com/i.test(url);
+    if (isNonAmazon) {
+      addToast('Invalid URL: Non-Amazon marketplace URLs (Flipkart, Myntra, etc.) are strictly rejected.', 'error');
+      return;
+    }
+
+    const isAmazonUrl = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)*(amazon\.in|amzn\.to|amzn\.in)(\/.*)?$/i.test(url);
+    if (!isAmazonUrl) {
+      addToast('Invalid Affiliate URL: Must be a valid Amazon India link (amazon.in or amzn.to).', 'error');
+      return;
+    }
+
+    const cleanAsin = (formData.asin || extractAsin(url)).trim().toUpperCase();
+    if (!cleanAsin) {
+      addToast('Amazon ASIN is required (e.g. B09G9FPHP7).', 'error');
+      return;
+    }
+
+    if (!/^[A-Z0-9]{10}$/.test(cleanAsin)) {
+      addToast('Invalid ASIN: Must be exactly 10 alphanumeric characters (e.g. B09G9FPHP7).', 'error');
+      return;
+    }
+
+    const urlAsin = extractAsin(url);
+    if (urlAsin && urlAsin !== cleanAsin) {
+      addToast(`ASIN Mismatch: ASIN field (${cleanAsin}) must match ASIN in URL (${urlAsin}).`, 'error');
+      return;
+    }
+
     setSaving(true);
     try {
       const payload = {
         ...formData,
+        affiliatePlatform: 'Amazon',
+        asin: cleanAsin,
         price: parseFloat(formData.price),
         originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : null,
         features: formData.features.filter((f) => f.trim() !== ''),
@@ -411,29 +453,41 @@ const AdminProductFormPage = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 pt-2">
-            {/* Affiliate Platform */}
+            {/* Affiliate Platform - Locked to Amazon */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700">Affiliate Store / Partner</label>
-              <div className="grid grid-cols-3 sm:grid-cols-5 gap-1.5">
-                {['Amazon', 'Flipkart', 'Myntra', 'Ajio', 'Nykaa'].map((plat) => (
-                  <button
-                    key={plat}
-                    type="button"
-                    onClick={() => handlePlatformChange(plat)}
-                    className={`py-2 px-2 text-xs font-bold rounded-xl border transition-all min-h-[40px] flex items-center justify-center ${
-                      formData.affiliatePlatform === plat
-                        ? 'bg-brand-50 text-brand-800 border-brand-500 ring-2 ring-brand-500/20'
-                        : 'bg-surface-50 text-slate-600 border-surface-300 hover:bg-surface-100'
-                    }`}
-                  >
-                    {plat}
-                  </button>
-                ))}
+              <div className="p-2.5 bg-amber-50/70 border border-amber-300 rounded-xl flex items-center justify-between min-h-[44px]">
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold text-xs text-amber-950">Amazon Associates (India)</span>
+                  <span className="text-[10px] bg-amber-200 text-amber-900 font-bold px-2 py-0.5 rounded-md">Amazon Only</span>
+                </div>
+                <span className="text-[11px] text-amber-800 font-mono">amazon.in</span>
               </div>
             </div>
 
-            {/* Buy Button Text */}
+            {/* Amazon ASIN */}
             <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                <span>
+                  Amazon ASIN <span className="text-rose-500">*</span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-normal">
+                  10 alphanumeric chars (e.g. B09G9FPHP7)
+                </span>
+              </label>
+              <input
+                type="text"
+                required
+                maxLength={10}
+                value={formData.asin}
+                onChange={(e) => setFormData({ ...formData, asin: e.target.value.toUpperCase().trim() })}
+                placeholder="B09G9FPHP7"
+                className="w-full bg-surface-50 border border-surface-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-brand-500 focus:bg-white font-mono uppercase"
+              />
+            </div>
+
+            {/* Buy Button Text */}
+            <div className="space-y-1.5 sm:col-span-2">
               <label className="text-xs font-bold text-slate-700">Button Call-to-Action Text</label>
               <input
                 type="text"
@@ -448,10 +502,10 @@ const AdminProductFormPage = () => {
             <div className="sm:col-span-2 space-y-1.5">
               <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
                 <span>
-                  Affiliate Target URL (With tracking tag) <span className="text-rose-500">*</span>
+                  Amazon Affiliate Target URL (With tracking tag) <span className="text-rose-500">*</span>
                 </span>
                 <span className="text-[10px] text-slate-400 font-normal">
-                  e.g. https://www.amazon.in/dp/...?tag=youraffid-21
+                  e.g. https://www.amazon.in/dp/B09G9FPHP7?tag=affilify-21
                 </span>
               </label>
               <div className="relative">
@@ -459,8 +513,8 @@ const AdminProductFormPage = () => {
                   type="url"
                   required
                   value={formData.affiliateUrl}
-                  onChange={(e) => setFormData({ ...formData, affiliateUrl: e.target.value })}
-                  placeholder="https://amzn.to/... or https://www.amazon.in/dp/..."
+                  onChange={(e) => handleAffiliateUrlChange(e.target.value)}
+                  placeholder="https://www.amazon.in/dp/B09G9FPHP7?tag=affilify-21"
                   className="w-full bg-surface-50 border border-surface-300 rounded-xl pl-9 pr-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-brand-500 focus:bg-white font-mono"
                 />
                 <Link2 className="w-4 h-4 text-slate-400 absolute left-3 top-3" />

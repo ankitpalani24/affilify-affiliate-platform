@@ -100,9 +100,7 @@ const AdminDashboardPage = () => {
           value: p.count,
         }))
       : [
-          { name: 'Amazon', value: 75 },
-          { name: 'Flipkart', value: 15 },
-          { name: 'Myntra', value: 10 },
+          { name: 'Amazon', value: 100 },
         ];
 
   return (

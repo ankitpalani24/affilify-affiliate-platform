@@ -12,7 +12,7 @@ import {
 const FilterSidebar = ({
   categories = [],
   brands = [],
-  platforms = ['Amazon', 'Flipkart', 'Myntra'],
+  platforms = ['Amazon'],
   selectedCategory,
   setSelectedCategory,
   selectedPlatform,

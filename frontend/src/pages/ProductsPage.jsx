@@ -287,7 +287,7 @@ const ProductsPage = () => {
         <FilterSidebar
           categories={categories}
           brands={filterMeta.brands}
-          platforms={filterMeta.platforms.length > 0 ? filterMeta.platforms : ['Amazon', 'Flipkart', 'Myntra']}
+          platforms={filterMeta.platforms.length > 0 ? filterMeta.platforms : ['Amazon']}
           selectedCategory={selectedCategory}
           setSelectedCategory={(val) => updateParam('category', val)}
           selectedPlatform={selectedPlatform}

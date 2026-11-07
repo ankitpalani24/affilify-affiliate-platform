@@ -231,8 +231,6 @@ const AdminProductsPage = () => {
             >
               <option value="all">All Stores</option>
               <option value="Amazon">Amazon</option>
-              <option value="Flipkart">Flipkart</option>
-              <option value="Myntra">Myntra</option>
             </select>
           </div>
 

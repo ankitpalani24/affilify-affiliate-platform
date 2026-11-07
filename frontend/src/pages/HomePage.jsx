@@ -142,18 +142,18 @@ const HomePage = () => {
               </Link>
 
               <Link
-                to="/products?platform=Flipkart"
-                className="bg-[#2874F0] hover:bg-[#1e5ec6] text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-all shadow-xs flex items-center gap-2 text-xs sm:text-sm min-h-[44px]"
+                to="/products?featured=true"
+                className="bg-brand-600 hover:bg-brand-500 text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-all shadow-xs flex items-center gap-2 text-xs sm:text-sm min-h-[44px]"
               >
-                <span>Flipkart Offers</span>
+                <span>Featured Deals</span>
                 <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Link>
 
               <Link
-                to="/products?platform=Myntra"
-                className="bg-[#FF3F6C] hover:bg-[#e02d58] text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-all shadow-xs flex items-center gap-2 text-xs sm:text-sm min-h-[44px]"
+                to="/products?trending=true"
+                className="bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl transition-all shadow-xs flex items-center gap-2 text-xs sm:text-sm min-h-[44px]"
               >
-                <span>Myntra Fashion</span>
+                <span>Trending Hot</span>
                 <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               </Link>
             </div>
@@ -215,7 +215,7 @@ const HomePage = () => {
               </div>
               <h3 className="font-bold text-slate-900 text-sm sm:text-base">Click "Buy Now"</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Instantly redirect to official verified retailer portals (Amazon, Flipkart, Myntra) with active promo codes applied.
+                Instantly redirect to official Amazon.in product pages with verified affiliate tags applied.
               </p>
             </div>
 

@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 import slugify from 'slugify';
 
+export const AMAZON_URL_REGEX = /^https?:\/\/(?:[a-zA-Z0-9-]+\.)*(?:amazon\.(?:in|com|co\.uk|de|fr|it|es|ca|co\.jp)|amzn\.(?:to|in))\/.+/i;
+export const ASIN_REGEX = /^[A-Z0-9]{10}$/i;
+
 const productSchema = new mongoose.Schema(
   {
     name: {
@@ -96,6 +99,18 @@ const productSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Affiliate URL is required'],
       trim: true,
+      validate: {
+        validator: function (v) {
+          if (!v) return false;
+          const plat = (this.platform || this.affiliatePlatform || 'amazon').toLowerCase();
+          if (plat === 'amazon') {
+            return AMAZON_URL_REGEX.test(v);
+          }
+          return true;
+        },
+        message: (props) =>
+          `Invalid affiliate URL for Amazon platform: "${props.value}". Must be a valid Amazon URL (e.g. https://www.amazon.in/dp/ASIN?tag=...). Marketplace URLs from Myntra, Flipkart, or third-party stores are strictly rejected.`,
+      },
     },
     availability: {
       type: String,
@@ -162,6 +177,36 @@ productSchema.pre('validate', function () {
   if (!this.platform && this.affiliatePlatform) {
     this.platform = this.affiliatePlatform;
   }
+  if (this.platform && this.platform.toLowerCase() === 'amazon') {
+    this.platform = 'amazon';
+  }
+
+  // Amazon-only validation and ASIN extraction
+  const plat = (this.platform || this.affiliatePlatform || 'amazon').toLowerCase();
+  if (plat === 'amazon') {
+    if (this.affiliateUrl && !AMAZON_URL_REGEX.test(this.affiliateUrl)) {
+      this.invalidate('affiliateUrl', `Invalid affiliate URL for Amazon platform: "${this.affiliateUrl}". Non-Amazon URLs (Flipkart, Myntra, etc.) are strictly prohibited.`);
+    }
+
+    // Auto-extract ASIN from Amazon URL if not set
+    const urlAsinMatch = this.affiliateUrl ? this.affiliateUrl.match(/(?:\/dp\/|\/gp\/product\/|\/product\/)([A-Z0-9]{10})(?:[/?#]|$)/i) : null;
+    const extractedAsin = urlAsinMatch ? urlAsinMatch[1].toUpperCase() : null;
+
+    if (!this.asin && extractedAsin) {
+      this.asin = extractedAsin;
+    }
+
+    if (this.asin) {
+      this.asin = this.asin.toUpperCase();
+      if (!ASIN_REGEX.test(this.asin)) {
+        this.invalidate('asin', `Invalid Amazon ASIN: "${this.asin}". Must be a valid 10-character alphanumeric identifier.`);
+      }
+      if (extractedAsin && this.asin !== extractedAsin) {
+        this.invalidate('asin', `ASIN mismatch: Stored ASIN (${this.asin}) does not match ASIN extracted from affiliate URL (${extractedAsin}).`);
+      }
+    }
+  }
+
   if (this.isModified('name') || !this.slug) {
     if (this.name) {
       this.slug = slugify(this.name, { lower: true, strict: true });
@@ -178,9 +223,10 @@ productSchema.pre('validate', function () {
   if (!this.asin && this.externalProductId) {
     this.asin = this.externalProductId;
   }
+  if (!this.sourceUrl && this.asin) {
+    this.sourceUrl = `https://www.amazon.in/dp/${this.asin}`;
+  }
 });
-
-
 
 // Full-text search index
 productSchema.index({
@@ -189,6 +235,16 @@ productSchema.index({
   shortDescription: 'text',
   tags: 'text',
 });
+
+// Compound unique index on platform + asin (only applies when asin is present)
+productSchema.index(
+  { platform: 1, asin: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { asin: { $type: 'string' } },
+    name: 'unique_platform_asin',
+  }
+);
 
 const Product = mongoose.model('Product', productSchema);
 export default Product;
