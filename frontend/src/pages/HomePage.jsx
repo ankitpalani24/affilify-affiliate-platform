@@ -112,11 +112,24 @@ const HomePage = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => <ProductSkeleton key={i} />)
-              : trendingProducts.map((p) => <ProductCard key={p._id} product={p} />)}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <ProductSkeleton key={i} />
+              ))}
+            </div>
+          ) : trendingProducts.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
+              {trendingProducts.map((p) => (
+                <ProductCard key={p._id} product={p} />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white border border-surface-200 rounded-2xl p-8 text-center text-slate-500 text-xs">
+              <p className="font-semibold text-slate-700">No trending deals currently listed.</p>
+              <p className="text-[11px] text-slate-400 mt-1">New Amazon products will appear here once published.</p>
+            </div>
+          )}
         </section>
 
         {/* Multi-Platform Showcase Banner */}
@@ -180,11 +193,24 @@ const HomePage = () => {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
-            {loading
-              ? Array.from({ length: 5 }).map((_, i) => <ProductSkeleton key={i} />)
-              : featuredProducts.map((p) => <ProductCard key={p._id} product={p} />)}
-          </div>
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <ProductSkeleton key={i} />
+              ))}
+            </div>
+          ) : featuredProducts.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5">
+              {featuredProducts.map((p) => (
+                <ProductCard key={p._id} product={p} />
+              ))}
+            </div>
+          ) : (
+            <div className="bg-white border border-surface-200 rounded-2xl p-8 text-center text-slate-500 text-xs">
+              <p className="font-semibold text-slate-700">No featured deals currently listed.</p>
+              <p className="text-[11px] text-slate-400 mt-1">Featured Amazon selections will appear here once added.</p>
+            </div>
+          )}
         </section>
 
         {/* 3-Step Trust Section */}
